@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { signOut } from "firebase/auth";
 import useAddTransaction from "../../hooks/useAddTransaction";
 import useGetTransactions from "../../hooks/useGetTransactions";
@@ -18,7 +18,7 @@ const ExpenseTracker = () => {
 
   const { balance, income, expenses } = transactionTotals;
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     addTransaction({
       description,
@@ -73,7 +73,7 @@ const ExpenseTracker = () => {
               placeholder="Amount"
               required
               value={transactionAmount}
-              onChange={(e) => setTransactionAmount(e.target.value)}
+              onChange={(e) => setTransactionAmount(Number(e.target.value))}
             />
             <input
               type="radio"

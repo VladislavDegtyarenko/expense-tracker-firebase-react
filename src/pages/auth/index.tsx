@@ -15,7 +15,6 @@ const Auth = () => {
       profilePhoto: results.user.photoURL,
       isAuth: true,
     };
-    console.log("results: ", results);
 
     localStorage.setItem("auth", JSON.stringify(authInfo));
     navigate("/expense-tracker");

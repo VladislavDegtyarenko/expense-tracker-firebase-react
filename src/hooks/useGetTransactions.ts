@@ -8,9 +8,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase-config";
 import useGetUserInfo from "./useGetUserInfo";
+import { TransactionDocument } from "../types/types";
+import { Unsubscribe } from "firebase/auth";
 
 const useGetTransactions = () => {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<TransactionDocument[]>([]);
   const [transactionTotals, setTransactionTotals] = useState({
     balance: 0.0,
     income: 0.0,
@@ -21,7 +23,7 @@ const useGetTransactions = () => {
   const { userID } = useGetUserInfo();
 
   const getTransactions = async () => {
-    let unsubscribe;
+    let unsubscribe: Unsubscribe;
 
     try {
       const queryTransactions = query(
@@ -31,12 +33,12 @@ const useGetTransactions = () => {
       );
 
       unsubscribe = onSnapshot(queryTransactions, (snapshot) => {
-        let docs = [];
+        let docs: TransactionDocument[] = [];
         let totalIncome = 0;
         let totalExpenses = 0;
 
         snapshot.forEach((doc) => {
-          const data = doc.data();
+          const data = doc.data() as TransactionDocument;
           const id = doc.id;
 
           docs.push({ ...data, id });
@@ -66,6 +68,8 @@ const useGetTransactions = () => {
 
   useEffect(() => {
     getTransactions();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { transactions, transactionTotals };
