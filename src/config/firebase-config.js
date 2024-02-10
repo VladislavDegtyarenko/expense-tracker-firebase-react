@@ -6,15 +6,6 @@ import { getFirestore } from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyBB_AhlcL6vytwlmWrSkcbiLZNKTW4awhc",
-//   authDomain: "expense-tracker-d93df.firebaseapp.com",
-//   projectId: "expense-tracker-d93df",
-//   storageBucket: "expense-tracker-d93df.appspot.com",
-//   messagingSenderId: "442197550439",
-//   appId: "1:442197550439:web:528e1b84dd36d9f6ce7bc2",
-// };
-
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
