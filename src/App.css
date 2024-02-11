@@ -6,3 +6,10 @@ body {
   max-width: 24rem;
   margin: 0 auto;
 }
+
+html,
+body,
+#root,
+.App {
+  height: 100%;
+}

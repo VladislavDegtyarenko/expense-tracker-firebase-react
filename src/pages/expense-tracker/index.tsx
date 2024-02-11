@@ -191,33 +191,6 @@ const ExpenseTracker = () => {
               </List>
             </div>
           ))}
-
-          {/* {transactions.map((transaction) => {
-            const {
-              description,
-              transactionAmount,
-              transactionType,
-              createdAt,
-            } = transaction;
-
-            const dateCreatedAt = new Date(createdAt.seconds * 1000);
-            const { day, month, weekdayShort } = dateParser(dateCreatedAt);
-            const dateString = `${day} ${month}, ${weekdayShort}`;
-
-            return (
-              <ListItem key={transaction?.createdAt?.seconds}>
-                <ListItemText
-                  primary={description}
-                  secondary={transactionType}
-                />
-                <Typography variant="body1">
-                  {`$${transactionAmount}`}
-                </Typography>
-
-                <Typography variant="caption">{dateString}</Typography>
-              </ListItem>
-            );
-          })} */}
         </List>
       </Box>
     </>
