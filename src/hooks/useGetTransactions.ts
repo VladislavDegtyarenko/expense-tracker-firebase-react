@@ -10,6 +10,29 @@ import { db } from "../config/firebase-config";
 import useGetUserInfo from "./useGetUserInfo";
 import { TransactionDocument } from "../types/types";
 import { Unsubscribe } from "firebase/auth";
+import { dateParser } from "../utils/dateParser";
+
+const groupTransactionsByDays = (transactions: TransactionDocument[]) => {
+  const grouped: { [dateString: string]: TransactionDocument[] } = {};
+
+  transactions.forEach((transaction) => {
+    const dateCreatedAt = new Date(
+      transaction?.createdAt?.seconds
+        ? transaction.createdAt.seconds * 1000
+        : new Date().getTime()
+    );
+    const { day, month, weekdayShort } = dateParser(dateCreatedAt);
+    const dateString = `${day} ${month}, ${weekdayShort}`;
+
+    if (!grouped[dateString]) {
+      grouped[dateString] = [];
+    }
+
+    grouped[dateString].push(transaction);
+  });
+
+  return grouped;
+};
 
 const useGetTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionDocument[]>([]);
@@ -18,6 +41,8 @@ const useGetTransactions = () => {
     income: 0.0,
     expenses: 0.0,
   });
+
+  const transactionsByDate = groupTransactionsByDays(transactions);
 
   const transactionCollectionRef = collection(db, "transactions");
   const { userID } = useGetUserInfo();
@@ -72,7 +97,7 @@ const useGetTransactions = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { transactions, transactionTotals };
+  return { transactions, transactionTotals, transactionsByDate };
 };
 
 export default useGetTransactions;

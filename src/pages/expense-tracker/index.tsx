@@ -6,9 +6,25 @@ import useGetUserInfo from "../../hooks/useGetUserInfo";
 import { auth } from "../../config/firebase-config";
 import { useNavigate } from "react-router-dom";
 
+// MUI
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import { dateParser } from "../../utils/dateParser";
+
 const ExpenseTracker = () => {
   const { addTransaction } = useAddTransaction();
-  const { transactions, transactionTotals } = useGetTransactions();
+  const { transactions, transactionsByDate, transactionTotals } =
+    useGetTransactions();
+  console.log("transactions: ", transactions);
   const { name, profilePhoto } = useGetUserInfo();
 
   const [description, setDescription] = useState("");
@@ -19,9 +35,10 @@ const ExpenseTracker = () => {
   const { balance, income, expenses } = transactionTotals;
 
   const onSubmit = async (e: FormEvent) => {
+    console.log("e: ", e);
     e.preventDefault();
     addTransaction({
-      description,
+      description: description.trim(),
       transactionAmount,
       transactionType,
     });
@@ -43,96 +60,166 @@ const ExpenseTracker = () => {
   return (
     <>
       <div className="expense-tracker">
-        <div className="container">
-          <h1>{name}'s Expense Tracker</h1>
-          <div className="balance">
-            <h3>Your Balance</h3>
-            <h2>{balance >= 0 ? `$${balance}` : `-$${balance * -1}`}</h2>
-          </div>
-          <div className="summary">
-            <div className="income">
-              <h4>Income</h4>
-              <p>${income}</p>
-            </div>
-            <div className="expenses">
-              <h4>Expenses</h4>
-              <p>${expenses}</p>
-            </div>
-          </div>
+        <Stack spacing={2}>
+          <Typography component="h1" variant="h6" align="center" pt={1}>
+            {name}'s Expense Tracker
+          </Typography>
 
-          <form className="add-transaction" onSubmit={onSubmit}>
-            <input
-              type="text"
-              placeholder="Description"
+          {profilePhoto && (
+            <Stack mt={2} spacing={1} alignItems="center">
+              <Box
+                component="img"
+                src={profilePhoto}
+                alt=""
+                sx={{ width: "4rem", height: "4rem", borderRadius: "50%" }}
+              />
+              <Button variant="text" onClick={signUserOut}>
+                Sign Out
+              </Button>
+            </Stack>
+          )}
+
+          <List>
+            <ListItem>
+              <ListItemText
+                secondary="Your balance"
+                primary={balance >= 0 ? `$${balance}` : `-$${balance * -1}`}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  alignItems: "center",
+                }}
+              />
+
+              <ListItemText
+                secondary="Income"
+                primary={`$${income}`}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  alignItems: "center",
+                }}
+              />
+
+              <ListItemText
+                secondary="Expenses"
+                primary={`$${expenses}`}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column-reverse",
+                  alignItems: "center",
+                }}
+              />
+            </ListItem>
+          </List>
+
+          <Box
+            component="form"
+            onSubmit={onSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
+            <Typography>Add new transaction:</Typography>
+            <TextField
+              label="Description"
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-            <input
+            <TextField
               type="number"
-              placeholder="Amount"
+              label="Amount"
               required
               value={transactionAmount}
               onChange={(e) => setTransactionAmount(Number(e.target.value))}
             />
-            <input
-              type="radio"
-              id="expense"
-              value="expense"
-              name="transaction-type"
-              required
-              checked={transactionType === "expense"}
-              onChange={(e) => setTransactionType(e.target.value)}
-            />
-            <label htmlFor="expense">Expense</label>
-            <input
-              type="radio"
-              id="income"
-              value="income"
-              name="transaction-type"
-              required
-              checked={transactionType === "income"}
-              onChange={(e) => setTransactionType(e.target.value)}
-            />
-            <label htmlFor="income">Income</label>
 
-            <button>Add Transaction</button>
-          </form>
-        </div>
+            <RadioGroup
+              row
+              aria-label="transaction type"
+              name="transaction-type"
+              value={transactionType}
+              onChange={(e) => setTransactionType(e.target.value)}
+            >
+              <FormControlLabel
+                value="expense"
+                label="Expense"
+                control={<Radio />}
+              />
+              <FormControlLabel
+                value="income"
+                label="Income"
+                control={<Radio />}
+              />
+            </RadioGroup>
 
-        {profilePhoto && (
-          <div>
-            <img src={profilePhoto} alt="" />
-            <button onClick={signUserOut}>Sign Out</button>
-          </div>
-        )}
+            <Button
+              variant="contained"
+              disabled={
+                transactionAmount === 0 || description.trim().length === 0
+              }
+              type="submit"
+            >
+              Add Transaction
+            </Button>
+          </Box>
+        </Stack>
       </div>
 
-      <div className="transactions">
-        <h3>Transactions</h3>
-        <ul>
-          {transactions.map((transaction) => {
-            const { description, transactionAmount, transactionType } =
-              transaction;
+      <Box mt={4}>
+        <Typography variant="h4">Transactions</Typography>
+        <List>
+          {Object.keys(transactionsByDate).map((dateString) => (
+            <div key={dateString}>
+              <List dense>
+                <Typography variant="h6">{dateString}</Typography>
+                {transactionsByDate[dateString].map((transaction) => {
+                  const { description, transactionAmount, transactionType } =
+                    transaction;
+
+                  return (
+                    <ListItem key={transaction?.createdAt?.seconds}>
+                      <ListItemText
+                        primary={description}
+                        secondary={transactionType}
+                      />
+                      <Typography variant="body1">
+                        {`$${transactionAmount}`}
+                      </Typography>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </div>
+          ))}
+
+          {/* {transactions.map((transaction) => {
+            const {
+              description,
+              transactionAmount,
+              transactionType,
+              createdAt,
+            } = transaction;
+
+            const dateCreatedAt = new Date(createdAt.seconds * 1000);
+            const { day, month, weekdayShort } = dateParser(dateCreatedAt);
+            const dateString = `${day} ${month}, ${weekdayShort}`;
 
             return (
-              <li key={transaction?.createdAt?.seconds}>
-                <h4>{description}</h4>
-                <p>
-                  ${transactionAmount} •{" "}
-                  <label
-                    style={{
-                      color: transactionType === "expense" ? "red" : "green",
-                    }}
-                  >
-                    {transactionType}
-                  </label>
-                </p>
-              </li>
+              <ListItem key={transaction?.createdAt?.seconds}>
+                <ListItemText
+                  primary={description}
+                  secondary={transactionType}
+                />
+                <Typography variant="body1">
+                  {`$${transactionAmount}`}
+                </Typography>
+
+                <Typography variant="caption">{dateString}</Typography>
+              </ListItem>
             );
-          })}
-        </ul>
-      </div>
+          })} */}
+        </List>
+      </Box>
     </>
   );
 };
