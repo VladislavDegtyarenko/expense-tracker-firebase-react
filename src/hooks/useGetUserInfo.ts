@@ -1,12 +1,17 @@
 const useGetUserInfo = () => {
-  const { name, profilePhoto, userID, isAuth } =
-    JSON.parse(localStorage.getItem("auth") || "") || {};
+  const savedAuthJSON = localStorage.getItem("auth");
+
+  if (savedAuthJSON) {
+    const { name, profilePhoto, userID, isAuth } = JSON.parse(savedAuthJSON);
+
+    return { name, profilePhoto, userID, isAuth };
+  }
 
   return {
-    name,
-    profilePhoto,
-    userID,
-    isAuth,
+    name: "",
+    profilePhoto: "",
+    userID: "",
+    isAuth: false,
   };
 };
 
